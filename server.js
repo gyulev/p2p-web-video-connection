@@ -11,15 +11,19 @@ app.get('/', (req, res) => {
 	res.redirect(`/${uuidV4()}`);
 });
 
+app.get('/:room', (req, res) => {
+	res.render('room', { roomId: req.params.room });
+});
+
 io.on('connection', (socket) => {
 	socket.on('join-room', (roomId, userId) => {
 		socket.join(roomId);
 		socket.broadcast.to(roomId).emit('user-connected', userId);
-	});
-});
 
-app.get('/:room', (req, res) => {
-	res.render('room', { roomId: req.params.room });
+		socket.on('disconnect', () => {
+			socket.broadcast.to(roomId).emit('user-disconnected', userId);
+		});
+	});
 });
 
 server.listen(3000);
